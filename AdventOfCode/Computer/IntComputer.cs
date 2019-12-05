@@ -20,7 +20,7 @@ namespace AdventOfCode.Computer
 
         List<int> Compute(List<int> program)
         {
-            Print(program);
+            //Print(program);
             int pointer = 0;
 
             // while not looking at the halting operation
@@ -28,12 +28,15 @@ namespace AdventOfCode.Computer
             {
                 List<int> args = GetArguments(pointer, program);
                 var opcode = program[pointer];
-                Console.Write(opcode + " ");
-                Print(args);
 
-                Compute(opcode % 100, args, program);
+                //Console.Write(opcode + " ");
+                //Print(args);
 
-                pointer += args.Count + 1;
+                var _goto = Compute(pointer, args, program);
+
+                //Print(program);
+
+                pointer = _goto;
                 //Print(program);
             }
 
@@ -55,9 +58,24 @@ namespace AdventOfCode.Computer
                 args.Add(GetArg(program[pointer + 2], modes[1]));
                 args.Add(GetArg(program[pointer + 3], 1));
             }
-            if(opcode == 3 || opcode == 4) 
+            else if(opcode == 3) 
             {
-                args.Add(program[pointer + 1]);
+                args.Add(GetArg(program[pointer + 1], 1));
+            }
+            else if (opcode == 4)
+            {
+                args.Add(GetArg(program[pointer + 1], modes[2]));
+            }
+            else if (opcode == 5 || opcode == 6)
+            {
+                args.Add(GetArg(program[pointer + 1], modes[2]));
+                args.Add(GetArg(program[pointer + 2], modes[1]));
+            }
+            else if (opcode == 7 || opcode == 8)
+            {
+                args.Add(GetArg(program[pointer + 1], modes[2]));
+                args.Add(GetArg(program[pointer + 2], modes[1]));
+                args.Add(GetArg(program[pointer + 3], 1));
             }
 
             return args;
@@ -95,49 +113,88 @@ namespace AdventOfCode.Computer
             }
         }
 
-        // Knows how modes affect the aquisition of arguments
-        int GetArg(int pointer, List<int> program, int mode)
-        {
-            var arg = -1;
-
-            if(mode == 0)
-            {
-                var temp = program[pointer];
-                arg = program[temp];
-            }
-            else if (mode == 1)
-            {
-                arg = program[pointer];
-            }
-
-            return arg;
-        }
-
         // Knows what each operation does
-        int Compute(int opcode, List<int> args, List<int> program)
+        int Compute(int pointer, List<int> args, List<int> program)
         {
-            int result = -1;
+            int opcode = program[pointer] % 100;
+            int result = 0;
+
             if (opcode == 1) // add
             {
                 result = args[0] + args[1];
                 program[args[2]] = result;
+                pointer += 4;
             }
             else if (opcode == 2) // mult
             {
                 result = args[0] * args[1];
                 program[args[2]] = result;
+                pointer += 4;
             }
             else if (opcode == 3) // take input -> store at arg 0
             {
-                var input = 1;
-                program[args[0]] = input;
+                Console.WriteLine("INPUT!");
+                var input = Console.ReadLine();
+                //Console.WriteLine("Place: " + input + " at " + args[0]);
+                program[args[0]] = int.Parse(input);
+                //Console.WriteLine("done");
+                pointer += 2;
             }
             else if (opcode == 4) // output
             {
-                Console.WriteLine("OUTPUT: " + program[args[0]]);
+                //Print(args);
+                Console.WriteLine("OUTPUT: " + args[0]);
+                pointer += 2;
+            }
+            else if (opcode == 5) // jmp true
+            {
+                if (args[0] != 0)
+                {
+                    pointer = args[1];
+                }
+                else
+                {
+                    pointer += 3;
+                }
+            }
+            else if (opcode == 6) // jmp false
+            {
+                if (args[0] == 0)
+                {
+                    pointer = args[1];
+                }
+                else
+                {
+                    pointer += 3;
+                }
+            }
+            else if (opcode == 7) // lt
+            {
+                if (args[0] < args[1])
+                {
+                    program[args[2]] = 1;
+                }
+                else
+                {
+                    program[args[2]] = 0;
+                }
+                pointer += 4;
+            }
+            else if (opcode == 8) // eq
+            {
+                //Console.WriteLine(args[0] + " == " + args[1] + " => " + args[2]);
+                if (args[0] == args[1])
+                {
+                    program[args[2]] = 1;
+                }
+                else
+                {
+                    program[args[2]] = 0;
+                }
+                pointer += 4;
             }
 
-            return result;
+            return pointer;
         }
 
         public List<int> Parse(string input)

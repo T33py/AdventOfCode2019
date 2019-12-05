@@ -11,13 +11,14 @@ namespace AdventOfCode
         static void Main(string[] args)
         {
             IntComputer comp = new IntComputer();
-            //string input = File.ReadAllText("IntCode.txt");
-            string input = File.ReadAllText("IntComputerTests.txt");
+            string input = File.ReadAllText("IntComputerAircondition1.txt");
+            //string input = File.ReadAllText("IntComputerTests.txt");
             string[] programs = input.Split('\n');
 
             foreach (string p in programs)
             {
-                comp.Print(comp.Run(p));
+                comp.Print(comp.Parse(p));
+                comp.Run(p);
             }
 
 
