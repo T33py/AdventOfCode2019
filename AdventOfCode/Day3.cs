@@ -31,30 +31,11 @@ namespace AdventOfCode
         /// <returns></returns>
         public int FindFewestStepsIntersection(string wire1, string wire2)
         {
-            Console.WriteLine(wire1);
-            Console.WriteLine(wire2);
+            var istmap = FindIntersections(wire1, wire2);
+            List<Coordinate> intersections = istmap.Item1;
+            WireMap map = istmap.Item2;
 
             int dist = 0;
-
-            var w1 = ParseWire(wire1);
-            var w2 = ParseWire(wire2);
-
-            List<Coordinate> intersections = new List<Coordinate>();
-
-            WireMap map = new WireMap();
-            Console.WriteLine("wire2 length: " + w2.Count);
-            foreach (Coordinate c1 in w1)
-            {
-                map.Add(c1);
-            }
-            foreach (Coordinate c2 in w2)
-            {
-                if (map.Find(c2))
-                {
-                    intersections.Add(c2);
-                    Console.WriteLine("  " + c2.ToString() + " at " + w2.IndexOf(c2));
-                }
-            }
 
             foreach (Coordinate c in intersections)
             {
@@ -73,10 +54,26 @@ namespace AdventOfCode
         /// </summary>
         public int FindClosestIntersection(string wire1, string wire2)
         {
-            Console.WriteLine(wire1);
-            Console.WriteLine(wire2);
+            List<Coordinate> intersections = FindIntersections(wire1, wire2).Item1;
 
             int dist = 0;
+
+            foreach (Coordinate c in intersections)
+            {
+                var manhattenDistance = Math.Abs(c.x) + Math.Abs(c.y);
+                if (manhattenDistance < dist || dist == 0) // take smallest dist !=0
+                {
+                    dist = manhattenDistance;
+                }
+            }
+
+            return dist;
+        }
+
+        (List<Coordinate>, WireMap) FindIntersections(string wire1, string wire2)
+        {
+            Console.WriteLine(wire1);
+            Console.WriteLine(wire2);
 
             var w1 = ParseWire(wire1);
             var w2 = ParseWire(wire2);
@@ -98,16 +95,7 @@ namespace AdventOfCode
                 }
             }
 
-            foreach(Coordinate c in intersections)
-            {
-                var manhattenDistance = Math.Abs(c.x) + Math.Abs(c.y);
-                if (manhattenDistance < dist || dist == 0) // take smallest dist !=0
-                {
-                    dist = manhattenDistance;
-                }
-            }
-
-            return dist;
+            return (intersections, map);
         }
 
         List<Coordinate> ParseWire(string wire)
