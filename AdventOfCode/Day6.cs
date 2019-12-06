@@ -10,8 +10,8 @@ namespace AdventOfCode
         static void Main(string[] args)
         {
             OrbitCalculationUnit ocu = new OrbitCalculationUnit();
-            //string input = File.ReadAllText("OrbitMap.txt");
-            string input = File.ReadAllText("OrbitMapTest4.txt");
+            string input = File.ReadAllText("OrbitMap.txt");
+            //string input = File.ReadAllText("OrbitMapTest5.txt");
             string[] orbitalMap = input.Split('\n');
 
             var orbits = ocu.GenerateOrbitalMap(orbitalMap);
@@ -19,6 +19,15 @@ namespace AdventOfCode
             Console.WriteLine(orbits.ToString());
             Console.WriteLine();
             Console.WriteLine(orbits.OrbitalChecksum());
+            Console.WriteLine();
+            var route = orbits.CalculateRoute("YOU", "SAN", orbits.Map[0]);
+            Console.WriteLine("Dist you -> san " + orbits.CalculateDistance("YOU", "SAN", orbits.Map[0]));
+            Console.WriteLine("route:");
+            foreach(Orbit o in route)
+            {
+                Console.WriteLine(o.name);
+            }
+
         }
     }
 
@@ -30,7 +39,6 @@ namespace AdventOfCode
 
             foreach (string o in mapstring)
             {
-                Console.WriteLine("add " + o);
                 var temp = o.Split(')');
 
                 if (temp.Length > 1)
@@ -51,6 +59,7 @@ namespace AdventOfCode
 
             foreach((string orbitee, string orbiter) mapping in orbits)
             {
+                Console.WriteLine("add " + mapping.orbitee + " ) " + mapping.orbiter);
                 map.Add(mapping.orbitee, mapping.orbiter);
             }
 
@@ -62,6 +71,7 @@ namespace AdventOfCode
     class OrbitalMap
     {
         List<Orbit> roots = new List<Orbit>();
+        public List<Orbit> Map { get => roots; }
 
         public void Add(string orbitee, string orbiter)
         {
@@ -70,11 +80,11 @@ namespace AdventOfCode
 
             foreach(Orbit o in roots)
             {
-                var c1 = Crawl(o, orbitee);
+                var c1 = FindOrbit(o, orbitee);
                 if (c1.found)
                     _orbitee = c1.thing;
 
-                var c2 = Crawl(o, orbiter);
+                var c2 = FindOrbit(o, orbiter);
                 if (c2.found)
                     _orbiter = c2.thing;
             }
@@ -112,14 +122,12 @@ namespace AdventOfCode
                 _orbitee.children.Add(_orbiter);
                 _orbiter.parent = _orbitee;
 
-                if(roots.Contains(_orbitee))
-                    roots.Remove(_orbitee);
                 if(roots.Contains(_orbiter))
                     roots.Remove(_orbiter);
             }
         }
 
-        (bool found, Orbit thing) Crawl(Orbit root, string find)
+        (bool found, Orbit thing) FindOrbit(Orbit root, string find)
         {
             List<Orbit> todo = new List<Orbit>();
 
@@ -145,9 +153,105 @@ namespace AdventOfCode
             return (false, null);
         }
 
+        public int CalculateDistance(string from, string to, Orbit map)
+        {
+            var route = CalculateRoute(from, to, map);
+            return route.Count - 1; // distance is allways jumps = nodes - 1
+        }
+
+        public List<Orbit> CalculateRoute(string from, string to, Orbit map)
+        {
+            var routeToStart = new List<Orbit>();
+            var routeToEnd = new List<Orbit>();
+            var route = new List<Orbit>();
+
+            Orbit start;
+            Orbit end;
+            var temp = FindOrbit(map, from);
+            if (temp.found)
+                start = temp.thing;
+            else
+                throw new ArgumentException();
+            
+            temp = FindOrbit(map, to);
+            if (temp.found)
+                end = temp.thing;
+            else
+                throw new ArgumentException();
+
+
+            while (start.parent != null)
+            {
+                routeToStart.Add(start.parent);
+                start = start.parent;
+            }
+            while (end.parent != null)
+            {
+                routeToEnd.Add(end.parent);
+                end = end.parent;
+            }
+
+            Orbit commonParent = null;
+            foreach(Orbit o in routeToStart)
+            {
+                route.Add(o);
+                if (routeToEnd.Contains(o)) // first common ancestor, as we generate the lists from the target not the root
+                {
+                    commonParent = o;
+                    break;
+                }
+            }
+
+            foreach(Orbit o in routeToEnd)
+            {
+                if(o == commonParent)
+                {
+                    break;
+                }
+                route.Add(o);
+            }
+
+            return route;
+        }
+
         public int OrbitalChecksum()
         {
-            return 0;
+            if (roots.Count == 0)
+                return 0;
+
+            int checksum = 0;
+            List<Orbit> todo = new List<Orbit>();
+
+
+            foreach (Orbit root in roots)
+            {
+                todo.Add(root);
+            }
+
+            while (todo.Count > 0)
+            {
+                var current = todo[0];
+                checksum += current.Checksum();
+
+                todo.Remove(current);
+
+                // add more work to the que
+                foreach (Orbit c in current.children)
+                {
+                    todo.Add(c);
+                }
+            }
+            return checksum;
+        }
+
+        public new string ToString()
+        {
+            string s = "";
+            foreach(Orbit o in roots)
+            {
+                s = s + o.ToString() + "\n\n";
+            }
+            return s;
         }
     }
 
@@ -166,6 +270,25 @@ namespace AdventOfCode
         {
             this.name = name;
             children = new List<Orbit>();
+        }
+
+        public int Checksum()
+        {
+            if (parent == null)
+                return 0;
+            else return parent.Checksum() + 1;
+        }
+
+        public new string ToString()
+        {
+            String s = "";
+            foreach (Orbit c in children)
+            {
+                s = s + name + " ) " + c.name + "\n";
+                s = s + c.ToString();
+            }
+
+            return s;
         }
     }
 }
