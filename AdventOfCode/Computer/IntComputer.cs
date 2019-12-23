@@ -6,23 +6,64 @@ namespace AdventOfCode.Computer
 {
     public class IntComputer
     {
+        public List<int> output = new List<int>();
+        int pointer = 0;
+        List<int> program = new List<int>();
+        List<int> inputs = new List<int>();
+        public bool waitingForInput = false;
+        public bool halted = false;
+
+        public void GiveInput(List<int> input)
+        {
+            inputs = input;
+        }
+
+        public void GiveInput(int input)
+        {
+            waitingForInput = false;
+            inputs.Add(input);
+        }
+
+        public List<int> Resume()
+        {
+            output = new List<int>();
+            //Console.WriteLine("resumed at " + pointer);
+            return Compute(program, inputs);
+        }
+
+        public void Reset()
+        {
+            pointer = 0;
+            program = new List<int>();
+            waitingForInput = false;
+            halted = false;
+        }
+
         public List<int> Run(string input)
         {
             List<int> program = Parse(input);
+            this.program = program;
 
-            return Compute(program);
+            return Compute(program, new List<int>());
         }
 
-        public List<int> Run(List<int> input)
+        public List<int> Run(List<int> program)
         {
-            return Compute(input);
+            this.program = program;
+            return Compute(program, new List<int>());
         }
 
-        List<int> Compute(List<int> program)
+        public List<int> Run(List<int> program, List<int> inputs)
         {
+            this.program = program;
+            return Compute(program, inputs);
+        }
+
+        List<int> Compute(List<int> program, List<int> inputs)
+        {
+            output = new List<int>();
             //Print(program);
-            int pointer = 0;
-
+            
             // while not looking at the halting operation
             while (program[pointer] != 99)
             {
@@ -32,13 +73,21 @@ namespace AdventOfCode.Computer
                 //Console.Write(opcode + " ");
                 //Print(args);
 
-                var _goto = Compute(pointer, args, program);
+                var _goto = Compute(pointer, args, program, inputs);
 
                 //Print(program);
 
                 pointer = _goto;
                 //Print(program);
+
+                if (waitingForInput)
+                {
+                    return program;
+                }
             }
+
+            Console.WriteLine("Halt");
+            halted = true;
 
             return program;
         }
@@ -114,7 +163,7 @@ namespace AdventOfCode.Computer
         }
 
         // Knows what each operation does
-        int Compute(int pointer, List<int> args, List<int> program)
+        int Compute(int pointer, List<int> args, List<int> program, List<int> inputs)
         {
             int opcode = program[pointer] % 100;
             int result = 0;
@@ -133,17 +182,28 @@ namespace AdventOfCode.Computer
             }
             else if (opcode == 3) // take input -> store at arg 0
             {
-                Console.WriteLine("INPUT!");
-                var input = Console.ReadLine();
-                //Console.WriteLine("Place: " + input + " at " + args[0]);
-                program[args[0]] = int.Parse(input);
-                //Console.WriteLine("done");
-                pointer += 2;
+                if (inputs.Count > 0) { 
+                    var input = inputs[0];
+                    inputs.RemoveAt(0);
+                    //Console.WriteLine("INPUT! " + input + " stored at " + args[0]);
+                    //Console.WriteLine("Place: " + input + " at " + args[0]);
+                    program[args[0]] = input;
+                    //Console.WriteLine("done");
+                    //Console.WriteLine("got input at: " + pointer);
+                    pointer += 2;
+                }
+                else
+                {
+                    waitingForInput = true;
+                    //Console.WriteLine("waiting for input at: " + pointer);
+                }
+
             }
             else if (opcode == 4) // output
             {
                 //Print(args);
-                Console.WriteLine("OUTPUT: " + args[0]);
+                output.Add(args[0]);
+                //Console.WriteLine("OUTPUT: " + args[0]);
                 pointer += 2;
             }
             else if (opcode == 5) // jmp true

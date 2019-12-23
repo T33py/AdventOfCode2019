@@ -8,23 +8,19 @@
     ".NETCoreApp,Version=v3.0": []
   },
   "packageFolders": {
-    "C:\\Users\\tom\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\Thorb\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tom\\source\\repos\\AdventOfCode\\AdventOfCode\\AdventOfCode.csproj",
+      "projectUniqueName": "C:\\Users\\Thorb\\source\\repos\\AdventOfCode2019\\AdventOfCode2019\\AdventOfCode\\AdventOfCode.csproj",
       "projectName": "AdventOfCode",
-      "projectPath": "C:\\Users\\tom\\source\\repos\\AdventOfCode\\AdventOfCode\\AdventOfCode.csproj",
-      "packagesPath": "C:\\Users\\tom\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tom\\source\\repos\\AdventOfCode\\AdventOfCode\\obj\\",
+      "projectPath": "C:\\Users\\Thorb\\source\\repos\\AdventOfCode2019\\AdventOfCode2019\\AdventOfCode\\AdventOfCode.csproj",
+      "packagesPath": "C:\\Users\\Thorb\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Thorb\\source\\repos\\AdventOfCode2019\\AdventOfCode2019\\AdventOfCode\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\tom\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Thorb\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
